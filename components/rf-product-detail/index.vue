@@ -173,20 +173,20 @@
 					title="优惠券"
 					@hide="hideService"
 					:specClass="couponClass"
-					@show="showPopupService('couponClass', product.canReceiveCoupon)"
-					:isEmpty="product.canReceiveCoupon"
+					@show="showPopupService('couponClass', productData.canReceiveCoupon)"
+					:isEmpty="productData.canReceiveCoupon"
 					empty="暂无可领取优惠券"
 				>
 					<view slot="content">
 						<text class="con t-r">领取优惠券</text>
 					</view>
-					<view slot="right" v-if="product.canReceiveCoupon > 0"><text class="iconfont iconyou"></text></view>
+					<view slot="right" v-if="productData.canReceiveCoupon > 0"><text class="iconfont iconyou"></text></view>
 					<view slot="popup" class="service">
 						<!-- 优惠券列表 -->
 						<view class="sub-list valid">
 							<view
 								class="row"
-								v-for="(item, index) in product.canReceiveCoupon"
+								v-for="(item, index) in productData.canReceiveCoupon"
 								:key="index"
 								@tap.stop="getCoupon(item)"
 							>
@@ -233,47 +233,47 @@
 					</view>
 				</rf-item-popup>
 				<!--限购说明-->
-				<rf-item-popup title="限购说明" v-if="type === 'buy_now' && parseInt(product.max_buy, 10) > 0">
+				<rf-item-popup title="限购说明" v-if="type === 'buy_now' && parseInt(productData.max_buy, 10) > 0">
 					<view slot="content">
-						<text>{{ `${product.max_buy} ${product.unit || '件'}` }}</text>
+						<text>{{ `${productData.max_buy} ${productData.unit || '件'}` }}</text>
 					</view>
 				</rf-item-popup>
 				<!--积分活动-->
-				<rf-item-popup title="积分活动" v-if="product.point_exchange_type !== '1'">
+				<rf-item-popup title="积分活动" v-if="productData.point_exchange_type !== '1'">
 					<view slot="content" class="con-list">
-						<text v-if="product.point_exchange_type">兑换类型: {{ product.point_exchange_type | pointExchangeTypeFilter }}</text>
-						<text v-if="parseInt(product.give_point, 10) > 0">赠送类型: {{ product.integral_give_type | integralGiveTypeFilter }}</text>
-						<text v-if="parseInt(product.give_point, 10) > 0">下单可获得: {{ product | givePointFilter }}积分</text>
-						<text v-if="product.point_exchange != 0">兑换所需积分: {{ product.point_exchange }}
+						<text v-if="productData.point_exchange_type">兑换类型: {{ productData.point_exchange_type | pointExchangeTypeFilter }}</text>
+						<text v-if="parseInt(productData.give_point, 10) > 0">赠送类型: {{ productData.integral_give_type | integralGiveTypeFilter }}</text>
+						<text v-if="parseInt(productData.give_point, 10) > 0">下单可获得: {{ productData | givePointFilter }}积分</text>
+						<text v-if="productData.point_exchange != 0">兑换所需积分: {{ productData.point_exchange }}
 						</text>
-						<text v-if="product.max_use_point != 0">可使用抵扣积分: {{ product.max_use_point }}</text>
+						<text v-if="productData.max_use_point != 0">可使用抵扣积分: {{ productData.max_use_point }}</text>
 						<text
 							class="buy-now"
 							@tap="addCart('buy', true)"
-							v-if="product.point_exchange_type == 3"
+							v-if="productData.point_exchange_type == 3"
 							>积分兑换 >>
 						</text>
 					</view>
 				</rf-item-popup>
 				<!--服务-->
 				<rf-item-popup
-					v-if="product.tags"
+					v-if="productData.tags"
 					title="服务"
 					@hide="hideService"
-					@show="showPopupService('serviceClass', product.tags)"
+					@show="showPopupService('serviceClass', productData.tags)"
 					:specClass="serviceClass"
 				>
 					<view slot="content">
-						<text>{{ product.tags[0] }}</text>
+						<text>{{ productData.tags[0] }}</text>
 					</view>
-					<view slot="right" v-if="product.tags"
+					<view slot="right" v-if="productData.tags"
 						><text class="iconfont iconyou"></text
 					></view>
 					<view slot="popup" class="service">
 						<view class="content">
 							<view
 								class="row"
-								v-for="(item, index) in product.tags"
+								v-for="(item, index) in productData.tags"
 								:key="index"
 							>
 								<view class="description">{{ item }}</view>
@@ -289,73 +289,73 @@
 					@show="
 						showPopupService(
 							'ladderPreferentialClass',
-							product.ladderPreferential
+							productData.ladderPreferential
 						)
 					"
 					:specClass="ladderPreferentialClass"
-					v-if="product.ladderPreferential"
+					v-if="productData.ladderPreferential"
 				>
 					<view slot="content" class="con-list">
 						<text>
 							满{{
-								product.ladderPreferential &&
-									product.ladderPreferential[0] &&
-									product.ladderPreferential[0].quantity
-							}}{{ product.unit || '件' }}
+								productData.ladderPreferential &&
+									productData.ladderPreferential[0] &&
+									productData.ladderPreferential[0].quantity
+							}}{{ productData.unit || '件' }}
 							<text
 								v-if="
 									parseInt(
-										product.ladderPreferential &&
-											product.ladderPreferential[0] &&
-											product.ladderPreferential[0].type,
+										productData.ladderPreferential &&
+											productData.ladderPreferential[0] &&
+											productData.ladderPreferential[0].type,
 										10
 									) === 1
 								"
 							>
-								每{{ product.unit || '件' }}减{{
-									product.ladderPreferential &&
-										product.ladderPreferential[0] &&
-										product.ladderPreferential[0].price
+								每{{ productData.unit || '件' }}减{{
+									productData.ladderPreferential &&
+										productData.ladderPreferential[0] &&
+										productData.ladderPreferential[0].price
 								}}元</text
 							>
 							<text
 								v-if="
 									parseInt(
-										product.ladderPreferential &&
-											product.ladderPreferential[0] &&
-											product.ladderPreferential[0].type,
+										productData.ladderPreferential &&
+											productData.ladderPreferential[0] &&
+											productData.ladderPreferential[0].type,
 										10
 									) === 2
 								"
 							>
-								每{{ product.unit || '件' }}{{
+								每{{ productData.unit || '件' }}{{
 									parseInt(
-										product.ladderPreferential &&
-											product.ladderPreferential[0] &&
-											product.ladderPreferential[0].price,
+										productData.ladderPreferential &&
+											productData.ladderPreferential[0] &&
+											productData.ladderPreferential[0].price,
 										10
 									)
 								}}折</text
 							>
 						</text>
 					</view>
-					<view slot="right" v-if="product.ladderPreferential"
+					<view slot="right" v-if="productData.ladderPreferential"
 						><text class="iconfont iconyou"></text
 					></view>
 					<view slot="popup" class="service">
 						<view class="content">
 							<view
 								class="row"
-								v-for="(item, index) in product.ladderPreferential"
+								v-for="(item, index) in productData.ladderPreferential"
 								:key="index"
 							>
 								<view class="title"
-									>满{{ item.quantity }}{{ product.unit || '件' }}
+									>满{{ item.quantity }}{{ productData.unit || '件' }}
 									<text v-if="parseInt(item.type, 10) === 1"
-										>每{{ product.unit || '件' }}减{{ item.price }}元</text
+										>每{{ productData.unit || '件' }}减{{ item.price }}元</text
 									>
 									<text v-if="parseInt(item.type, 10) === 2"
-										>每{{ product.unit || '件' }}{{ parseInt(item.price, 10) }}折</text
+										>每{{ productData.unit || '件' }}{{ parseInt(item.price, 10) }}折</text
 									>
 								</view>
 							</view>
@@ -370,32 +370,32 @@
 					@show="
 						showPopupService(
 							'attributeValueClass',
-							product.attributeValue
+							productData.attributeValue
 						)
 					"
 					:specClass="attributeValueClass"
-					v-if="product.attributeValue"
+					v-if="productData.attributeValue"
 				>
 					<view slot="content">
 						<text>
 							{{
-								`${product.attributeValue &&
-									product.attributeValue[0] &&
-									product.attributeValue[0]
-										.title}: ${product.attributeValue &&
-									product.attributeValue[0] &&
-									product.attributeValue[0].value}`
+								`${productData.attributeValue &&
+									productData.attributeValue[0] &&
+									productData.attributeValue[0]
+										.title}: ${productData.attributeValue &&
+									productData.attributeValue[0] &&
+									productData.attributeValue[0].value}`
 							}}</text
 						>
 					</view>
-					<view slot="right" v-if="product.attributeValue"
+					<view slot="right" v-if="productData.attributeValue"
 						><text class="iconfont iconyou"></text
 					></view>
 					<view slot="popup" class="service">
 						<view class="content">
 							<view
 								class="row"
-								v-for="(item, index) in product.attributeValue"
+								v-for="(item, index) in productData.attributeValue"
 								:key="index"
 							>
 								<view class="title">
@@ -410,23 +410,23 @@
 			<!-- 评价 -->
 			<view class="eva-section" @tap="toEvaluateList">
 				<view class="e-header">
-					<text class="tit">评价({{ product.comment_num || 0 }})</text>
-					<text class="tip" v-if="product.match_ratio"
-						>好评率 {{ product.match_ratio }}%</text
+					<text class="tit">评价({{ productData.comment_num || 0 }})</text>
+					<text class="tip" v-if="productData.match_ratio"
+						>好评率 {{ productData.match_ratio }}%</text
 					>
 					<text class="tip" v-else>暂无评价信息</text>
 					<i class="iconfont iconyou"></i>
 				</view>
 				<view
 					class="eva-box"
-					v-if="product.evaluate && product.evaluate"
+					v-if="productData.evaluate && productData.evaluate"
 				>
 					<image
 						class="portrait"
 						:src="
-							(product.evaluate &&
-								product.evaluate[0] &&
-								product.evaluate[0].member_head_portrait) ||
+							(productData.evaluate &&
+								productData.evaluate[0] &&
+								productData.evaluate[0].member_head_portrait) ||
 								headImg
 						"
 						mode="aspectFill"
@@ -435,9 +435,9 @@
 						<view class="name">
 							<text>
 								{{
-									(product.evaluate &&
-										product.evaluate[0] &&
-										product.evaluate[0].member_nickname) ||
+									(productData.evaluate &&
+										productData.evaluate[0] &&
+										productData.evaluate[0].member_nickname) ||
 										'匿名用户'
 								}}
 							</text>
@@ -450,23 +450,23 @@
 							/>
 						</view>
 						<text class="con in2line">{{
-							(product.evaluate &&
-								product.evaluate[0] &&
-								product.evaluate[0].content) ||
+							(productData.evaluate &&
+								productData.evaluate[0] &&
+								productData.evaluate[0].content) ||
 								'这个人很懒，什么都没留下~'
 						}}</text>
 						<view class="bot">
 							<text class="attr"
 								>购买类型：{{
-									(product.evaluate &&
-										product.evaluate[0] &&
-										product.evaluate[0].sku_name) ||
+									(productData.evaluate &&
+										productData.evaluate[0] &&
+										productData.evaluate[0].sku_name) ||
 										singleSkuText
 								}}</text>
 							<text class="time">{{
-								product.evaluate &&
-									product.evaluate[0] &&
-									product.evaluate[0].created_at | time
+								productData.evaluate &&
+									productData.evaluate[0] &&
+									productData.evaluate[0].created_at | time
 							}}</text>
 						</view>
 					</view>
@@ -477,7 +477,7 @@
 				<view class="d-header">
 					<text>商品详情</text>
 				</view>
-				<rf-parser :html="product.intro" lazy-load></rf-parser>
+				<rf-parser :html="productData.intro" lazy-load></rf-parser>
 			</view>
 			<!-- 底部操作菜单 -->
 			<view class="page-bottom">
@@ -512,7 +512,7 @@
 				</view>
 				<view
 					class="action-btn-group"
-					v-if="parseInt(this.currentStock || this.product.stock, 10) > 0"
+					v-if="parseInt(this.currentStock || this.productData.stock, 10) > 0"
 				>
 					<button
 						class="action-btn"
@@ -533,7 +533,7 @@
 				</view>
 				<view class="action-btn">
 					<button
-						v-if="parseInt(this.currentStock || this.product.stock, 10) === 0"
+						v-if="parseInt(this.currentStock || this.productData.stock, 10) === 0"
 						class="action-btn-submit"
 						:disabled="buyBtnDisabled"
 					>
@@ -559,7 +559,6 @@
 			<canvas class="hideCanvas" canvas-id="default_PosterCanvasId" :style="{width: (poster.width||10) + 'px', height: (poster.height||10) + 'px'}"></canvas>
 		</view>
 		<!--回到顶部-->
-		<rf-live v-if="product.name"></rf-live>
 		<!--#ifdef MP-->
     <rf-nav></rf-nav>
 		<!--#endif-->
@@ -591,7 +590,6 @@
 	import rfBadge from '@/components/rf-badge/rf-badge';
 	import uniTag from '@/components/uni-tag/uni-tag';
 	import rfNav from '@/components/rf-nav';
-	import rfLive from '@/components/rf-live';
 	import { cartItemCount, cartItemCreate } from '@/api/product';
 	import { collectCreate, collectDel, pickupPointIndex, transmitCreate } from '@/api/basic';
   import { couponReceive, addressList } from '@/api/userInfo';
@@ -635,7 +633,6 @@
 			rfNav,
 			rfItemPopup,
 			rfBadge,
-			rfLive,
 			rfRate,
 			uniTag,
 			rfAttrContent

@@ -2,6 +2,7 @@
 .rf-opacity {
 	opacity: 0.4;
 }
+.flex{display: flex;}
 // 两边布局
 .rf-space-between {
 	display: flex;
@@ -1144,7 +1145,7 @@
 			background-color: #f60;
 		}
 		.tit-normal {
-			background-color: $page-color-light;
+			background-color:#eee;
 		}
 	}
 }

@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 import $mConstDataConfig from '@/config/constData.config';
 Vue.use(Vuex);
 const ACCESSTOKEN = uni.getStorageSync('accessToken') || '';
+console.log(ACCESSTOKEN,'ACCESSTOKEN')
 const REFERRER = uni.getStorageSync('referrer') || '';
 const USER = uni.getStorageSync('user') || {};
 const REFRESHTOKEN = uni.getStorageSync('refreshToken') || '';

@@ -627,14 +627,17 @@ export default {
 		// 数据初始化
 		async initData(options) {
 			this.promoCode = options.promo_code;
-			this.data = await JSON.parse(options.data);
+			console.log(JSON.parse(options.data))
+			this.data = await JSON.parse(options.data).data;
 			this.userInfo = uni.getStorageSync('userInfo');
 			await this.getOrderDetail();
 		},
 		// 获取订单详情
 		async getOrderDetail() {
 			await this.$http
-				.get(`${orderPreview}`, this.data)
+				.post(`${orderPreview}`, this.data
+				,{type:'data'}
+				)
 				.then(r => {
 					this.loading = false;
 					this.orderDetail = r.data;

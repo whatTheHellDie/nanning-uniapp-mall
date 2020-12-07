@@ -1,10 +1,10 @@
 <template>
 	<view class="order">
 		<!--搜索导航栏-->
-		<view class="order-search" @tap="navTo(`/pages/index/search/search?keyword=搜索我的订单&type=order`)">
+		<!-- <view class="order-search" @tap="navTo(`/pages/index/search/search?keyword=搜索我的订单&type=order`)">
 			<view class="order-search-input">请输入订单关键字</view>
 			<view class="iconfont iconsousuo2"></view>
-		</view>
+		</view> -->
 		<!--导航栏-->
 		<view class="navbar">
 			<view
@@ -353,12 +353,15 @@ export default {
 		async getOrderList(type) {
 			let navItem = this.navList[this.tabCurrentIndex];
 			const params = {};
-			if (navItem.state || navItem.state === 0) {
-				params.synthesize_status = navItem.state;
-			}
-			params.page = this.page;
+				if (navItem.state || navItem.state === 0) {
+					params.status = navItem.state;
+				}else{
+					params.status = -1;
+				}
+			params.pageNum = this.page;
 			await this.$http
-				.get(`${orderList}`, params)
+				.get(`${orderList}`,
+				{...params,pageSize: 10})
 				.then(async r => {
 					if (type === 'refresh') {
 						uni.stopPullDownRefresh();

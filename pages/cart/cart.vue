@@ -29,7 +29,7 @@
 		<!-- 购物车列表 -->
 		<view class="goods-list" v-else>
 			<view class="btn-clear" :class="'text-'+themeColor.name" @tap="clearCart({ lose_status: 1 })"
-				>清空失效商品</view
+				>清空购物车</view
 			>
 			<view class="rf-cart-row" v-for="(row, index) in cartList" :key="index">
 				<!-- 删除按钮 -->
@@ -60,27 +60,28 @@
 					<!-- 商品信息 -->
 					<view class="goods-info">
 						<view class="img">
-							<image :src="row.product_img"></image>
+							<image :src="row.productPic"></image>
 						</view>
 						<view class="info">
 							<view
 								class="title in2line"
 								@tap="navTo(`/pages/product/product?id=${row.product.id}`)"
 							>
-								{{ row.product_name }}
+								{{ row.productName }}
+								<div></div>
 							</view>
 							<view class="state-wrapper">
-								<view class="spec" @tap.stop="toggleSpec(row)">{{ row.sku_name || singleSkuText }}</view>
+								<!-- <view class="spec" @tap.stop="toggleSpec(row)">11{{ row.sku_name || singleSkuText }}</view> -->
 								<view class="state" v-if="parseInt(row.status, 10) === 0">
 									已失效
 								</view>
 							</view>
 							<view class="price-number">
-								<view class="price" v-if="parseInt(row.status, 10) === 1">{{ moneySymbol }}{{
-									row.sku && row.sku.price
+								<view class="price" >{{ moneySymbol }}{{
+									row.price
 								}}</view>
-								<view class="remark" v-else>{{ row.remark }}</view>
-								<view class="number" v-if="parseInt(row.status, 10) === 1">
+								<!-- <view class="remark">{{ row.remark }}</view> -->
+								<view class="number">
 									<view class="sub" @tap.stop="sub(row, index)">
 										<text class="iconfont icon icon-jianhao"></text>
 									</view>
@@ -88,7 +89,7 @@
 										<input
 											type="number"
 											:class="'text-'+themeColor.name"
-											v-model="row.number"
+											v-model="row.quantity"
 											@input.stop="numberChange(row, $event, index)"
 										/>
 									</view>
@@ -120,9 +121,6 @@
 				@tap="deleteCartItem"
 				v-if="selectedList.length > 0"
 				>删除</view
-			>
-			<view class="delBtn" :class="'text-'+themeColor.name" @tap="clearCart()" v-if="selectedList.length > 0"
-				>清空</view
 			>
 			<view class="settlement">
 				<view class="sum"
@@ -268,28 +266,34 @@ export default {
 		stopPrevent() {},
 		// 删除选中购物车商品
 		async deleteCartItem(id, type) {
-			const skuIds = [];
-			if (type) {
-				skuIds.push(parseInt(id, 10));
-			} else {
-				for (let i = 0; i < this.cartList.length; i++) {
-					if (this.cartList[i].selected) {
-						skuIds.push(parseInt(this.cartList[i].sku_id, 10));
-					}
+			
+			const ids = [];
+			for(let item of this.cartList){
+				if(item.selected){
+				ids.push(item.id)
 				}
 			}
-			await this.$http
-				.post(`${cartItemDel}`, {
-					sku_ids: JSON.stringify(skuIds)
-				})
-				.then(() => {
-					this.selectedList.length = 0;
-					this.isAllselected = false;
-					this.sumPrice = 0;
-					this.getCartItemList();
-					this.oldIndex = null;
-					this.theIndex = null;
-				});
+			let content='确定要删除选中的商品？'
+			uni.showModal({
+				content,
+				success: async e => {
+						await this.$http
+							.post(`${cartItemDel}`, {
+								ids: ids
+							}
+							// ,{type:'data'},
+							)
+							.then(() => {
+								this.selectedList.length = 0;
+								this.isAllselected = false;
+								this.sumPrice = 0;
+								this.getCartItemList();
+								this.oldIndex = null;
+								this.theIndex = null;
+							});
+				}
+			});
+			
 		},
 		// 修改购物车商品sku
 		async handleCartItemUpdateSku(skuId, newSkuId) {
@@ -356,18 +360,16 @@ export default {
 		},
 		// 清空购物车
 		clearCart(params) {
-			const content = params ? '清空失效商品？' : '清空购物车？';
+			const content =  '清空购物车？';
 			uni.showModal({
 				content,
 				success: async e => {
-					if (e.confirm) {
-						await this.$http.post(`${cartItemClear}`, params).then(() => {
+						await this.$http.post(`${cartItemClear}`).then(() => {
 							this.selectedList.length = 0;
 							this.isAllselected = false;
 							this.sumPrice = 0;
 							this.getCartItemList();
 						});
-					}
 				}
 			});
 		},
@@ -421,7 +423,7 @@ export default {
 		},
 		// 选中商品
 		selected(index, item) {
-			if (parseInt(item.status, 10) === 0) return;
+			// if (parseInt(item.status, 10) === 0) return;
 			this.cartList[index].selected = !this.cartList[index].selected;
 			let i = this.selectedList.indexOf(this.cartList[index].id);
 			i > -1
@@ -449,15 +451,15 @@ export default {
 		},
 		// 减少数量(执行接口)
 		sub(item, index) {
-			if (this.cartList[index].number <= 1) {
+			if (this.cartList[index].quantity <= 1) {
 				return;
 			}
-			this.cartList[index].number--;
-			this.numberChange(item);
+			this.cartList[index].quantity--;
+			this.numberChange(item, undefined, index);
 		},
 		// 增加数量(执行接口)
 		add(item, index) {
-			this.cartList[index].number++;
+			this.cartList[index].quantity++;
 			this.numberChange(item, undefined, index, 'add');
 		},
 		// 控制可输入购物车商品数量
@@ -465,26 +467,24 @@ export default {
 		// 监听购物车商品数量改变
 		async numberChange(item, data, index, type) {
 			if (data) {
-				this.cartList[index].number = data.detail.value;
+				this.cartList[index].quantity = data.detail.value;
 			}
+			console.log({id:item.id,quantity:this.cartList[index].quantity})
 			await this.$http
-				.post(`${cartItemUpdateNum}`, {
-					sku_id: item.sku_id,
-					num: item.number
-				})
+				.get(`${cartItemUpdateNum}`, {id:item.id,quantity:this.cartList[index].quantity},{type:'data'})
 				.then(r => {
 					if (r.code === 200) {
 						this.sum();
 					} else {
 						if (type === 'add') {
-							this.cartList[index].number--;
+							this.cartList[index].quantity--;
 						}
 						this.$mHelper.toast(r.message);
 					}
 				})
 				.catch(() => {
 					if (type === 'add') {
-						this.cartList[index].number--;
+						this.cartList[index].quantity--;
 					}
 				});
 		},
@@ -500,7 +500,7 @@ export default {
 				}
 			}
 			data.type = 'cart';
-			data.data = ids.join(',');
+			data.data = ids;
 			this.selectedList.length = 0;
 			this.isAllselected = false;
 			this.sumPrice = 0;
@@ -513,8 +513,7 @@ export default {
 			const arr = [];
 			for (let i = 0; i < len; i++) {
 				if (this.cartList[i].selected) {
-					arr.push(this.cartList[i]);
-					this.sumPrice = this.arrSort(arr);
+					this.sumPrice = this.cartList[i].price*this.cartList[i].quantity;
 				}
 			}
 			this.sumPrice = this.sumPrice.toFixed(2);
@@ -523,63 +522,7 @@ export default {
 		floor(val) {
 			return Math.floor(val * 100) / 100;
 		},
-		// 计算相同商品不同规格价格
-		arrSort(arr) {
-			const map = {},
-				dest = [];
-			for (let i = 0; i < arr.length; i++) {
-				const ai = arr[i];
-				if (!map[ai.product.id]) {
-					dest.push({
-						id: ai.product.id,
-						num: 0,
-						price: 0,
-						data: [ai]
-					});
-					map[ai.product.id] = ai;
-				} else {
-					for (let j = 0; j < dest.length; j++) {
-						const dj = dest[j];
-						if (dj.data[0].product.id === ai.product.id) {
-							dj.data.push(ai);
-							break;
-						}
-					}
-				}
-			}
-			const discountArr = [];
-			dest.forEach(item => {
-				item.data.forEach(item2 => {
-					item.num += parseInt(item2.number, 10);
-					item.price += parseInt(item2.number, 10) * item2.price;
-				});
-				const ladderPreferential = item.data[0].ladderPreferential;
-				for (let i = 0; i < ladderPreferential.length; i++) {
-					if (item.num >= parseInt(ladderPreferential[i].quantity, 10)) {
-						ladderPreferential[i].num = item.num;
-						ladderPreferential[i].itemPrice = item.data[0].price;
-						ladderPreferential[i].totalPrice = item.price;
-						discountArr.push(ladderPreferential[i]);
-						break;
-					}
-				}
-			});
-			let amount = 0;
-			let discount = 0;
-			discountArr.forEach(item2 => {
-				if (parseInt(item2.type, 10) === 1) {
-					discount += item2.price * item2.num;
-				} else {
-					discount +=
-						item2.totalPrice -
-						this.floor((item2.itemPrice * item2.price) / 100) * item2.num;
-				}
-			});
-			dest.forEach(item => {
-				amount += item.price;
-			});
-			return amount - discount;
-		}
+		
 	}
 };
 </script>

@@ -199,8 +199,9 @@ export default class Request {
 	post(url, data, options = {}) {
 		return this.request({
 			url,
-			params:data,
+			params:options.type==='data'?null:data,
 			method: 'POST',
+			data:options.type==='data'?data:null,
 			// ...options
 		});
 	}

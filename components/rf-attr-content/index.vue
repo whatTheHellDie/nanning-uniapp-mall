@@ -1,15 +1,14 @@
 <template>
 	<view class="attr-content">
 		<view class="a-t">
-			<image class="image" mode="widthFix" :src="pic || product.pic"></image>
+			<image class="image" mode="widthFix" :src="pic || (product.product&&product.product.pic)"></image>
 			<view class="right">
 				<text class="title in2line">{{ product.name }}</text>
 				<view class="sku-info-wrapper">
 					<view class="price-wrapper">
-						<image mode="aspectFit" class="image" :src="vipPrice"></image>
-						<text :class="'text-' + themeColor.name">{{ moneySymbol }}{{ currentProductPrice }}</text>
+						<text :class="'text-' + themeColor.name">{{ moneySymbol }}{{ currentProductPrice>0?currentProductPrice:(product.product&&product.product.price) }}</text>
 					</view>
-					<text class="stock">库存：{{ stock }}{{ product.unit || '件' }}</text>
+					<text class="stock">库存：{{ stock||(product.product&&product.product.stock) }}{{ product.unit || '件' }}</text>
 					<view class="selected in2line">
 						已选：
 						<text class="selected-text" v-for="(sItem, sIndex) in specSelected" :key="sIndex">
@@ -26,20 +25,17 @@
 				<view class="item-list">
 					<view class="flex" v-if="item.id===childItem.productAttributeId" v-for="(childItem, childIndex) in productAttributeValueList"
 					 :key="childIndex">
-						<view v-for="(itemy,itemyIndex) in childItem.specList" :key="index+itemyIndex.toString()" 
-						:class="[childItem.availableList[itemyIndex] ? 'bg-' + themeColor.name : 'tit-normal',
-						 !childItem.disabled ? 'disabled' : '']"
-						 @tap="selectSpec(index,itemyIndex, {key:item.name,value:itemy})"
-						  :style="childItem.selected && parseInt(item.show_type) === 2? styleObject: ''"
+						<view v-for="(itemy,itemyIndex) in childItem.specList" :key="index+itemyIndex.toString()" :class="[childItem.selectedList[itemyIndex] ? 'bg-' + themeColor.name : 'tit-normal',
+						 !childItem.availableList[itemyIndex] ? 'disabled' : '']"
+						 @tap="selectSpec(index,itemyIndex, {key:item.name,value:itemy},!childItem.availableList[itemyIndex])" :style="childItem.selected && parseInt(item.show_type) === 2? styleObject: ''"
 						 class="tit">
 							<text>{{ itemy }}</text>
 						</view>
 					</view>
 					<view class="flex">
-						<view v-for="(itemj, itemjIndex) in item.specList" :key="itemjIndex+'k'"
-						 :class="[item.selectedList[itemjIndex] ? 'bg-' + themeColor.name : 'tit-normal',
+						<view v-for="(itemj, itemjIndex) in item.specList" :key="itemjIndex+'k'" :class="[item.selectedList[itemjIndex] ? 'bg-' + themeColor.name : 'tit-normal',
 						  !item.availableList[itemjIndex] ? 'disabled' : '']"
-						 @tap="selectSpec(index,itemjIndex, {key:item.name,value:itemj})" :style="itemj.selected && parseInt(item.show_type) === 2? styleObject: ''"
+						 @tap="selectSpec(index,itemjIndex, {key:item.name,value:itemj},!item.availableList[itemjIndex])" :style="itemj.selected && parseInt(item.show_type) === 2? styleObject: ''"
 						 class="tit">
 							<text>{{ itemj }}</text>
 						</view>
@@ -112,8 +108,8 @@
 		},
 		data() {
 			return {
-				chosenItemObj:{},
-				beChooseArr:[],
+				chosenItemObj: {},
+				beChooseArr: [],
 				styleObject: null,
 				productAttributeList: [],
 				productAttributeValueList: [],
@@ -124,7 +120,6 @@
 				cartCount: parseInt(this.product.min_buy, 10) || this.minNum || 1,
 				pic: null,
 				specSelected: [],
-				vipPrice: this.$mAssetsPath.vipPrice,
 				moneySymbol: this.moneySymbol,
 				skuName: null
 			};
@@ -180,16 +175,17 @@
 				let showSpeclist = []
 				let showSpecAttrObj = {}
 				let spDataList = []
+				console.log(originList,productAttributeValueList,'gg')
 				skuStockList.forEach((item, i) => {
 					let spData = JSON.parse(item.spData)
 					spDataList.push(item.spData)
 					spData.forEach((itemx) => {
 						showSpeclist.push(itemx.key)
-						if(!showSpecAttrObj[itemx.key]){
-							showSpecAttrObj[itemx.key]=[]
+						if (!showSpecAttrObj[itemx.key]) {
+							showSpecAttrObj[itemx.key] = []
 						}
 						showSpecAttrObj[itemx.key].push(itemx.value)
-						showSpecAttrObj[itemx.key]=[...new Set(showSpecAttrObj[itemx.key])]
+						showSpecAttrObj[itemx.key] = [...new Set(showSpecAttrObj[itemx.key])]
 					})
 				})
 				showSpeclist = [...new Set(showSpeclist)] //数组去重
@@ -206,11 +202,11 @@
 				originList.forEach((item, i) => {
 					item.selectedList = []
 					if (item.inputList) {
-						
+
 						item.specList = item.inputList.split(',')
 						item.specList.forEach((itemx, j) => {
 							item.selectedList[j] = ''
-							console.log('???',originList)
+							console.log('???', originList)
 						})
 					}
 
@@ -224,10 +220,16 @@
 						})
 					}
 
+					for (let itemx of originList) {
+						if (item.productAttributeId === itemx.id) { //给productAttributeValueList加parentName
+							item.parentName = itemx.name
+						}
+					}
+
 				})
-				productAttributeValueList=productAttributeValueList.filter((item)=>{
-					for (let itemx of originList){
-						if(item.productAttributeId===itemx.id){
+				productAttributeValueList = productAttributeValueList.filter((item) => {
+					for (let itemx of originList) {
+						if (item.productAttributeId === itemx.id) {
 							return true
 						}
 					}
@@ -236,25 +238,24 @@
 				originList.forEach((item, i) => {
 					originList.length
 					productAttributeValueList.length
-					if(productAttributeValueList.length===0){
+					if (productAttributeValueList.length === 0) {
 						productAttributeValueList.push({})
 					}
-					if(productAttributeValueList[i]){
-						if(originList[i].id!==productAttributeValueList[i].productAttributeId){
-							productAttributeValueList.splice(i,0,{})
+					if (productAttributeValueList[i]) {
+						if (originList[i].id !== productAttributeValueList[i].productAttributeId) {
+							productAttributeValueList.splice(i, 0, {})
 						}
-					}else{
-						productAttributeValueList.splice(i,0,{})
+					} else {
+						productAttributeValueList.splice(i, 0, {})
 					}
-				
+
 				})
-				this.setAvailableList(originList,showSpecAttrObj)
-				this.setAvailableList1(productAttributeValueList,showSpecAttrObj)
-				
-				
-				console.log(originList,'productAttributeList')
-				
-				console.log(productAttributeValueList,'productAttributeValueList')
+				this.setAvailableList(originList, showSpecAttrObj)
+				this.setAvailableList1(productAttributeValueList, showSpecAttrObj)
+
+				console.log(originList,productAttributeValueList,'gg')
+
+
 				this.productAttributeList = originList;
 				this.skuStockList = product.skuStockList
 				this.productAttributeValueList = productAttributeValueList
@@ -294,96 +295,99 @@
 				// 			this.skuId = item.id;
 				// 		}
 				// 	});
-				  },
-				  setAvailableList(originList,showSpecAttrObj){
-					  let showSpecAttrObjInnerIndex=0 //showSpecAttrObj的index
-					  for(let key of Object.keys(showSpecAttrObj)){
-					  	let specList=originList[showSpecAttrObjInnerIndex].specList
-					  	if(!specList){
-					  		showSpecAttrObjInnerIndex++
-					  		continue;}
-					  	originList[showSpecAttrObjInnerIndex].availableList=[]
-					  	let availableList=originList[showSpecAttrObjInnerIndex].availableList
-					  	originList[showSpecAttrObjInnerIndex].specList.forEach((itemxxx,j)=>{
-					  		availableList[j]=false
-					  	})
-					  	showSpecAttrObj[key].forEach((item1,i)=>{
-					  		specList.forEach((item2,index)=>{
-					  			if(specList[index]===item1){
-					  				availableList[index]=true
-					  			}
-					  		})
-					  	})
-					  	showSpecAttrObjInnerIndex++
-					  }
-				  },
-				  setAvailableList1(productAttributeValueList,showSpecAttrObj){
-				  					  let showSpecAttrObjInnerIndex=0 //showSpecAttrObj的index
-				  					  for(let key of Object.keys(showSpecAttrObj)){
-				  					  	let specList=productAttributeValueList[showSpecAttrObjInnerIndex].specList
-				  					  	if(!specList){
-				  					  		showSpecAttrObjInnerIndex++
-				  					  		continue;}
-				  					  	productAttributeValueList[showSpecAttrObjInnerIndex].availableList=[]
-				  					  	let availableList=productAttributeValueList[showSpecAttrObjInnerIndex].availableList
-				  					  	productAttributeValueList[showSpecAttrObjInnerIndex].specList.forEach((itemxxx,j)=>{
-				  					  		availableList[j]=false
-				  					  	})
-				  					  	showSpecAttrObj[key].forEach((item1,i)=>{
-				  					  		specList.forEach((item2,index)=>{
-				  					  			if(specList[index]===item1){
-				  					  				availableList[index]=true
-				  					  			}
-				  					  		})
-				  					  	})
-				  					  	showSpecAttrObjInnerIndex++
-				  					  }
-				  },
-				numberChange(data) {
-				    this.cartCount = parseInt(data.number, 10);
 			},
-			// 选择规格
-			selectSpec(parentIndex, index, obj, type) {
-				let list = this.productAttributeList[parentIndex].selectedList;
-				let list1 = this.productAttributeValueList[parentIndex].selectedList;
-				if (list.length > 0) {
-					list.forEach((item,i) => {
-						list[i]=''
-					});
-					list[index]='selected'
-				}
-				if (list1.length > 0) {
-					list1.forEach((item,i) => {
-						list1[i]=''
-					});
-					list1[index]='selected'
-				}
-				this.$forceUpdate()
-				this.beChooseArr.push(JSON.stringify(obj))
-				this.beChooseArr=[...new Set(this.beChooseArr)]
-				this.skuStockList.forEach((item,i)=>{
-					let str=item.spData
-					let index=0;
-					this.beChooseArr.forEach((itemx,j)=>{
-						if(str.includes(itemx)){
+			getAllSelected() {
+				this.beChooseArr = []
+				this.productAttributeList.forEach((item) => {
+					if (item.selectedList) {
+						item.selectedList.forEach((itemx, j) => {
+							if (itemx === 'selected') {
+								this.beChooseArr.push(JSON.stringify({
+									key: item.name,
+									value: item.specList[j]
+								}))
+							}
+						})
+					}
+				})
+				this.productAttributeValueList.forEach((item) => {
+					console.log(this.productAttributeValueList, 'productAttributeValueList1')
+					if (item.selectedList) {
+						item.selectedList.forEach((itemx, j) => {
+							if (itemx === 'selected') {
+								this.beChooseArr.push(JSON.stringify({
+									key: item.parentName,
+									value: item.specList[j]
+								}))
+							}
+						})
+					}
+				})
+				this.skuStockList.forEach((item, i) => {
+					let str = item.spData
+					let index = 0;
+					this.beChooseArr.forEach((itemx, j) => {
+						console.log(str, itemx, 'itemx')
+						if (str.includes(itemx)) {
 							index++
 						}
 					})
-					console.log(index,this.productAttributeList.length,'length')
-					if(index===this.productAttributeList.length){
-						this.chosenItemObj=item
+					console.log(this.beChooseArr, 'arr')
+					console.log(index, this.productAttributeList.length, 'length')
+					if (index === this.productAttributeList.length) {
+						this.chosenItemObj = item
 					}
-					console.log(this.chosenItemObj)
 				})
-				if (parseInt(type, 10) === 3) {
-					this.pic = list[index].data;
+				console.log(this.chosenItemObj.pic)
+				const chosenItemObj=this.chosenItemObj
+				if(chosenItemObj){
+					this.pic = chosenItemObj.pic
+					this.stock = chosenItemObj.stock
+					this.price = chosenItemObj.price
+					this.skuId = chosenItemObj.skuCode
 				}
-				if (parseInt(type, 10) === 2) {
-					this.styleObject = {
-						color: list[index].data,
-						border: `1px solid ${list[index].data}`
-					};
+			},
+			// 选择规格
+			selectSpec(parentIndex, index, obj, isDisabled) {
+				if (isDisabled === true) return
+				let productAttributeObj = this.productAttributeList[parentIndex]
+				let productAttributeValueObj = this.productAttributeValueList[parentIndex]
+				let list = productAttributeObj.selectedList;
+				let list1 = productAttributeValueObj.selectedList;
+				console.log(productAttributeObj, productAttributeValueObj, 'list')
+
+				console.log(list, list1, 'gg')
+				if (list.length > 0) {
+					list.forEach((item, i) => {
+						list[i] = ''
+					});
+					list[index] = 'selected'
+
+
 				}
+
+				if (list1 && list1.length > 0) {
+					list1.forEach((item, i) => {
+						list1[i] = ''
+					});
+					list1[index] = 'selected'
+
+				}
+				this.$forceUpdate()
+				this.getAllSelected()
+
+				// this.beChooseArr.push(JSON.stringify(obj))
+				// this.beChooseArr=[...new Set(this.beChooseArr)]
+
+				// if (parseInt(type, 10) === 3) {
+				// 	this.pic = list[index].data;
+				// }
+				// if (parseInt(type, 10) === 2) {
+				// 	this.styleObject = {
+				// 		color: list[index].data,
+				// 		border: `1px solid ${list[index].data}`
+				// 	};
+				// }
 
 				// 存储已选择
 				/**
@@ -423,22 +427,72 @@
 				// 	// }
 				// });
 			},
+
+			setAvailableList(originList, showSpecAttrObj) {
+				let showSpecAttrObjInnerIndex = 0 //showSpecAttrObj的index
+				for (let key of Object.keys(showSpecAttrObj)) {
+					let specList = originList[showSpecAttrObjInnerIndex].specList
+					if (!specList) {
+						showSpecAttrObjInnerIndex++
+						continue;
+					}
+					originList[showSpecAttrObjInnerIndex].availableList = []
+					let availableList = originList[showSpecAttrObjInnerIndex].availableList
+					originList[showSpecAttrObjInnerIndex].specList.forEach((itemxxx, j) => {
+						availableList[j] = false
+					})
+					showSpecAttrObj[key].forEach((item1, i) => {
+						specList.forEach((item2, index) => {
+							if (specList[index] === item1) {
+								availableList[index] = true
+							}
+						})
+					})
+					showSpecAttrObjInnerIndex++
+				}
+			},
+			setAvailableList1(productAttributeValueList, showSpecAttrObj) {
+				let showSpecAttrObjInnerIndex = 0 //showSpecAttrObj的index
+				for (let key of Object.keys(showSpecAttrObj)) {
+					let specList = productAttributeValueList[showSpecAttrObjInnerIndex].specList
+					if (!specList) {
+						showSpecAttrObjInnerIndex++
+						continue;
+					}
+					productAttributeValueList[showSpecAttrObjInnerIndex].availableList = []
+					let availableList = productAttributeValueList[showSpecAttrObjInnerIndex].availableList
+					productAttributeValueList[showSpecAttrObjInnerIndex].specList.forEach((itemxxx, j) => {
+						availableList[j] = false
+					})
+					showSpecAttrObj[key].forEach((item1, i) => {
+						specList.forEach((item2, index) => {
+							if (specList[index] === item1) {
+								availableList[index] = true
+							}
+						})
+					})
+					showSpecAttrObjInnerIndex++
+				}
+			},
+			numberChange(data) {
+				this.cartCount = parseInt(data.number, 10);
+			},
 			toggleSpec(type) {
 				if (!this.skuId) {
 					this.$mHelper.toast('请选择规格');
 					return;
 				}
+				console.log('kk')
 				if (this.stock < 1) {
 					this.$mHelper.toast('库存不足');
 					return;
 				}
 				this.$emit('toggle', {
-					stock: this.stock,
-					skuId: this.skuId,
+					...this.chosenItemObj,
 					cartCount: this.cartCount,
-					skuName: this.skuName || this.singleSkuText,
-					price: this.price,
-					type: type
+					product:this.product.product,
+					brand:this.product.brand,
+					type:'cart'
 				});
 			}
 		}

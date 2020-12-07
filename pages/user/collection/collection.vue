@@ -87,7 +87,7 @@ export default {
 	data() {
 		return {
 			collectionList: [],
-			page: 1,
+			pageNum: 1,
 			loadingType: 'more',
 			loading: true,
 			moneySymbol: this.moneySymbol,
@@ -124,7 +124,7 @@ export default {
 	},
 	// 下拉刷新
 	onPullDownRefresh() {
-		this.page = 1;
+		this.pageNum = 1;
 		this.collectionList = [];
 		this.loading = true;
 		this.getCollectionList('refresh');
@@ -132,18 +132,18 @@ export default {
 	// 加载更多
 	onReachBottom() {
   if (this.loadingType === 'nomore') return;
-		this.page++;
+		this.pageNum++;
 		this.getCollectionList();
 	},
 	methods: {
 		async handleDeleteCollection(id) {
 			await this.$http
 				.delete(`${collectDel}?id=${id}`, {
-					page: this.page
+					pageNum: this.pageNum
 				})
 				.then(() => {
 					this.$mHelper.toast('取消收藏成功');
-					this.page = 1;
+					this.pageNum = 1;
 					this.collectionList.length = 0;
 					this.getCollectionList();
 					this.oldIndex = null;
@@ -152,7 +152,7 @@ export default {
 		},
 		// 数据初始化
 		initData() {
-			this.page = 1;
+			this.pageNum = 1;
 			this.collectionList.length = 0;
 			this.getCollectionList();
 		},
@@ -208,7 +208,7 @@ export default {
 		async getCollectionList(type) {
 			await this.$http
 				.get(`${collectList}`, {
-					page: this.page
+					pageNum: this.pageNum
 				})
 				.then(r => {
 					this.loading = false;

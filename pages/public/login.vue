@@ -294,7 +294,7 @@ export default {
 			btnLoading: false,
 			reqBody: {},
 			codeSeconds: 0, // 验证码发送时间间隔
-			loginByPass: true,
+			loginByPass: false,
 			smsCodeBtnDisabled: true,
 			userInfo: null,
 			loginBg: this.$mAssetsPath.loginBg,

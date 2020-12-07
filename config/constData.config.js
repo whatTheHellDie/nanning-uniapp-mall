@@ -191,7 +191,7 @@ export default {
 		{ state: 0, text: '待付款' },
 		{ state: 1, text: '待发货' },
 		{ state: 2, text: '待收货' },
-		{ state: 3, text: '评价' }
+		{ state: 3, text: '已完成' }
 	],
 
 	// 直播记录列表

@@ -30,6 +30,7 @@
 				@getRegions="handleGetRegions"
 			>
 			</rf-pick-regions>
+			<view @tap="toggleTab()" class="change-address">{{ result }}123</view>
 		</view>
 		<view class="row b-b">
 			<text class="tit">详细地址</text>
@@ -62,6 +63,8 @@
 
 		<!--加载动画-->
 		<rfLoading isFullScreen :active="loading"></rfLoading>
+		<w-picker mode="region" :areaCode="defaultCode"  @confirm="onConfirm" ref="region" themeColor1="#006934"></w-picker>
+		
 	</view>
 </template>
 
@@ -75,12 +78,16 @@
  */
 import { addressCreate, addressUpdate, addressDetail } from '@/api/userInfo';
 import rfPickRegions from '@/components/rf-pick-regions';
+import wPicker from '@/components/w-picker/w-picker.vue';
 export default {
 	components: {
-		rfPickRegions
+		rfPickRegions,
+		wPicker
 	},
 	data() {
 		return {
+			result:'',
+			defaultCode:["11", "1101", "110105"],
 			addressData: {
 				realname: '',
 				mobile: '',
@@ -102,6 +109,17 @@ export default {
 		this.initData(options);
 	},
 	methods: {
+		toggleTab() {
+			this.$refs['region'].show();
+		},
+		onConfirm(val) {
+			
+			//如果页面需要调用多个mode类型，可以根据mode处理结果渲染到哪里;
+			this.result = val.result;
+			this.addressData.provinceCode = (val.checkValue[0]*10000).toString()
+				this.addressData.cityCode = (val.checkValue[1]*100).toString()
+				this.addressData.districtCode = (val.checkValue[2]).toString()
+		},
 		// 获取选择的地区
 		handleGetRegions(e) {
 			this.addressData.province_id = e.province_id;
@@ -110,6 +128,7 @@ export default {
 		},
 		// 数据初始化
 		async initData(options) {
+			this.getCountryAddress()
 			let title = '新增收货地址';
 			if (options.type === 'edit') {
 				title = '编辑收货地址';
@@ -123,6 +142,17 @@ export default {
 			uni.setNavigationBarTitle({
 				title
 			});
+		},
+		async getCountryAddress() {
+			await this.$http
+				.get(`/member/address`)
+				.then(async r => {
+					this.addressData = await r.data;
+					this.loading = false;
+				})
+				.catch(() => {
+					this.loading = false;
+				});
 		},
 		// 获取收货地址
 		async getAddressDetail(id) {

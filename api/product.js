@@ -19,17 +19,17 @@ const combinationView = '/tiny-shop/v1/marketing/combination/view';
 // 猜您喜欢
 const guessYouLikeList = '/tiny-shop/v1/product/product/guess-you-like';
 // 添加购物车
-const cartItemCreate = '/tiny-shop/v1/member/cart-item/create';
+const cartItemCreate = '/cart/add';
 // 购物车列表
-const cartItemList = '/tiny-shop/v1/member/cart-item/index';
+const cartItemList = '/cart/list';
 // 购物车列表
 const cartItemCount = '/tiny-shop/v1/member/cart-item/count';
 // 删除购物车商品
-const cartItemDel = '/tiny-shop/v1/member/cart-item/delete-ids';
+const cartItemDel = '/cart/delete';
 // 清空购物车
-const cartItemClear = '/tiny-shop/v1/member/cart-item/clear';
+const cartItemClear = '/cart/clear';
 // 修改购物车商品数量
-const cartItemUpdateNum = '/tiny-shop/v1/member/cart-item/update-num';
+const cartItemUpdateNum = '/cart/update/quantity';
 // 修改购物车商品sku
 const cartItemUpdateSku = '/tiny-shop/v1/member/cart-item/update-sku';
 
@@ -39,7 +39,7 @@ const brandIndex = '/brand/recommendList';
 // 订单创建
 const orderCreate = '/tiny-shop/v1/order/order/create';
 // 订单预览
-const orderPreview = '/tiny-shop/v1/order/order/preview';
+const orderPreview = '/order/generateConfirmOrder';
 
 // 取消未支付订单
 const orderClose = '/tiny-shop/v1/member/order/close';

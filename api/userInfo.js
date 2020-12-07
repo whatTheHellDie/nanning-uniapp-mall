@@ -10,13 +10,13 @@ const memberInfo = '/sso/info';
 const memberUpdate = '/tiny-shop/v1/member/member/update';
 
 // 收货地址列表
-const addressList = '/tiny-shop/v1/member/address/index';
+const addressList = '/member/address/list';
 // 默认收货地址
 const addressDefault = '/tiny-shop/v1/member/address/default';
 // 默认收货地址
 const addressDetail = '/tiny-shop/v1/member/address/view';
 // 创建收货地址
-const addressCreate = '/tiny-shop/v1/member/address/create';
+const addressCreate = '/member/address/add';
 // 修改收货地址
 const addressUpdate = '/tiny-shop/v1/member/address/update';
 // 修改收货地址
@@ -29,11 +29,11 @@ const myCouponList = '/tiny-shop/v1/member/coupon/index';
 // 优惠券详情
 const couponDetail = '/tiny-shop/v1/marketing/coupon-type/view';
 // 领取优惠券
-const couponReceive = '/tiny-shop/v1/marketing/coupon-type/create';
+const couponReceive = '/member/coupon/add/';
 const couponClear = '/tiny-shop/v1/member/coupon/clear';
 
 // 获取我的订单
-const orderList = '/tiny-shop/v1/member/order/index';
+const orderList = '/order/list';
 // 订单确认收货
 const orderTakeDelivery = '/tiny-shop/v1/member/order/take-delivery';
 // 退货/退款申请
@@ -54,7 +54,7 @@ const footPrintList = '/member/readHistory/list';
 const footPrintDel = '/tiny-shop/v1/member/footprint/delete';
 
 // 收藏列表
-const collectList = '/tiny-shop/v1/member/collect/index';
+const collectList = '/member/productCollection/list';
 
 // 积分余额日志
 const creditsLogList = '/tiny-shop/v1/member/credits-log/index';
